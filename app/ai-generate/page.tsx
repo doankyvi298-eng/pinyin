@@ -5,39 +5,71 @@ import { useState } from "react";
 
 export default function AIGeneratePage() {
   const [prompt, setPrompt] = useState("");
-  const [negativePrompt, setNegativePrompt] = useState("");
-  const [imageSize, setImageSize] = useState("512x512");
+  const [imageSize, setImageSize] = useState("2K");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      setError("请输入提示词");
+      return;
+    }
 
     setIsGenerating(true);
-    // TODO: 集成实际的 AI 生图 API（如 DALL-E、Stable Diffusion API等）
-    setTimeout(() => {
-      // 模拟生成图片（使用占位符）
-      const placeholders = [
-        `https://via.placeholder.com/512x512/FF6B6B/FFFFFF?text=${encodeURIComponent(prompt.slice(0, 20))}`,
-        `https://via.placeholder.com/512x512/4ECDC4/FFFFFF?text=${encodeURIComponent(prompt.slice(0, 20))}`,
-      ];
-      setGeneratedImages(placeholders);
+    setError("");
+    setGeneratedImageUrl("");
+
+    try {
+      const response = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          size: imageSize,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "生成失败");
+      }
+
+      const data = await response.json();
+      setGeneratedImageUrl(data.imageUrl);
+    } catch (err) {
+      console.error("Error generating image:", err);
+      setError(err instanceof Error ? err.message : "生成失败，请重试");
+    } finally {
       setIsGenerating(false);
-    }, 3000);
+    }
   };
 
-  const handleDownload = (imageUrl: string, index: number) => {
-    const a = document.createElement("a");
-    a.href = imageUrl;
-    a.download = `ai-generated-${index + 1}.png`;
-    a.click();
+  const handleDownload = async () => {
+    if (!generatedImageUrl) return;
+
+    try {
+      const response = await fetch(generatedImageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ai-generated-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      setError("下载失败，请重试");
+    }
   };
 
   const presetPrompts = [
-    "一只可爱的猫咪坐在窗台上看风景，油画风格",
-    "未来科技城市，赛博朋克风格，霓虹灯光",
-    "宁静的日式庭院，樱花飘落，水墨画风格",
-    "神秘的森林中的精灵，梦幻氛围，高质量CG",
+    "星际穿越，黑洞，黑洞里冲出一辆快支离破碎的复古列车，强视觉冲击力，电影大片，末日既视感",
+    "一只可爱的猫咪坐在窗台上看风景，油画风格，温暖的阳光",
+    "未来科技城市，赛博朋克风格，霓虹灯光，高楼大厦",
+    "宁静的日式庭院，樱花飘落，水墨画风格，禅意",
   ];
 
   return (
@@ -94,20 +126,6 @@ export default function AIGeneratePage() {
               </div>
             </div>
 
-            {/* Negative Prompt */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                负面提示词（可选）
-              </label>
-              <input
-                type="text"
-                value={negativePrompt}
-                onChange={(e) => setNegativePrompt(e.target.value)}
-                placeholder="例如：低质量、模糊、变形..."
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-
             {/* Image Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -118,10 +136,9 @@ export default function AIGeneratePage() {
                 onChange={(e) => setImageSize(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="512x512">512×512 (正方形)</option>
-                <option value="768x512">768×512 (横向)</option>
-                <option value="512x768">512×768 (纵向)</option>
-                <option value="1024x1024">1024×1024 (高清)</option>
+                <option value="1K">1K (1024×1024)</option>
+                <option value="2K">2K (2048×2048)</option>
+                <option value="4K">4K (4096×4096)</option>
               </select>
             </div>
 
@@ -129,64 +146,74 @@ export default function AIGeneratePage() {
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium py-4 px-6 rounded-lg transition-all transform hover:scale-[1.02] disabled:scale-100"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium py-4 px-6 rounded-lg transition-all transform hover:scale-[1.02] disabled:scale-100 flex items-center justify-center gap-2"
             >
               {isGenerating ? (
-                <span className="flex items-center justify-center gap-2">
+                <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   生成中...
-                </span>
+                </>
               ) : (
                 "🎨 生成图片"
               )}
             </button>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  ❌ {error}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Generated Images */}
-        {generatedImages.length > 0 && (
+        {/* Generated Image */}
+        {generatedImageUrl && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
             <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">
               生成结果
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {generatedImages.map((imageUrl, index) => (
-                <div key={index} className="space-y-4">
-                  <img
-                    src={imageUrl}
-                    alt={`Generated ${index + 1}`}
-                    className="w-full rounded-lg shadow-md"
-                  />
-                  <button
-                    onClick={() => handleDownload(imageUrl, index)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    下载图片 {index + 1}
-                  </button>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <img
+                src={generatedImageUrl}
+                alt="Generated"
+                className="w-full rounded-lg shadow-md"
+              />
+              <button
+                onClick={handleDownload}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+              >
+                💾 下载图片
+              </button>
             </div>
 
             <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 <strong>使用的提示词：</strong> {prompt}
               </p>
-              {negativePrompt && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  <strong>负面提示词：</strong> {negativePrompt}
-                </p>
-              )}
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                <strong>图片尺寸：</strong> {imageSize}
+              </p>
             </div>
           </div>
         )}
 
-        <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            💡 提示：此功能需要集成第三方 AI 生图服务（如 DALL-E、Stable Diffusion API、MidJourney 等）才能正常工作
-          </p>
+        {/* Info Box */}
+        <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
+            💡 使用提示
+          </h4>
+          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <li>• 详细描述您想要的图片内容、风格和氛围</li>
+            <li>• 可以指定艺术风格，如油画、水墨画、赛博朋克等</li>
+            <li>• 生成时间约需要 10-30 秒，请耐心等待</li>
+            <li>• 生成的图片由火山引擎 AI 提供</li>
+          </ul>
         </div>
       </main>
     </div>
