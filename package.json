@@ -1,0 +1,14 @@
+﻿{
+  "name": "hanzi-pinyin-match",
+  "version": "0.1.0",
+  "private": true,
+  "description": "汉字拼音配对：拼音和汉字混排，正确配对即消除（记忆+识读练习）",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "start": "node scripts/dev-server.js",
+    "build": "node -e \"console.log('静态项目，无需构建')\"",
+    "lint": "node -e \"console.log('未配置 ESLint')\"",
+    "prettier": "node -e \"console.log('未配置 Prettier')\""
+  }
+}

@@ -1,0 +1,72 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>汉字拼音配对 | 消除练习</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>汉字拼音配对</h1>
+      <p class="subtitle">拼音和汉字混乱排序，正确配对即可消除</p>
+    </header>
+
+    <main class="app-main">
+      <section class="toolbar" aria-label="游戏控制">
+        <label for="lesson">关卡：</label>\n        <select id="lesson" aria-label="课程">
+          <option value="L1" selected>第一关</option>
+          <option value="L2">第二关</option>
+          <option value="L3">第三关</option>
+          <option value="L4">第四关</option>
+          <option value="L5">第五关</option>
+          <option value="L6">第六关</option>
+          <option value="L7">第七关</option>
+          <option value="L8">第八关</option>
+          <option value="L9">第九关</option>
+          <option value="L10">第十关</option>
+          <option value="L11">第十一关</option>
+          <option value="L12">第十二关</option>
+          <option value="L13">第十三关</option>
+          <option value="L14">第十四关</option>
+          <option value="L15">第十五关</option>
+          <option value="L16">第十六关</option>
+          <option value="L17">第十七关</option>
+          <option value="L18">第十八关</option>
+          <option value="L19">第十九关</option>
+          <option value="L20">第二十关</option>
+        </select>\n\n        <label for="size">棋盘：</label>\n        <select id="size" aria-label="棋盘大小">\n          <option value="4x4" selected>4 × 4（8 对）</option>\n          <option value="6x4">6 × 4（12 对）</option>\n          <option value="6x6">6 × 6（18 对）</option>\n        </select>\n\n        <label class="toggle"><input type="checkbox" id="kids" /> 儿童模式</label>\n        <label class="toggle"><input type="checkbox" id="voice" /> 发音</label>\n\n        <button id="newGame" class="btn primary">新开一局</button>
+        <button id="shuffle" class="btn">洗牌</button>
+        <button id="hint" class="btn">提示</button>
+
+        <div class="stats">
+          <span>用时：<strong id="timer">00:00</strong></span>
+          <span>步数：<strong id="moves">0</strong></span>
+          <span>得分：<strong id="score">0</strong></span>
+          <span>最佳：<strong id="best">--</strong></span>
+        </div>
+      </section>
+
+      <section class="board-wrap">
+        <div id="board" class="board" role="grid" aria-label="汉字拼音配对棋盘"></div>
+      </section>
+
+      <section class="help">
+        <p>玩法：棋盘里混合“汉字”和“拼音”。点击两张牌进行配对；若一个是汉字、另一个是其对应拼音（带数字声调），则配对成功并消除。</p>
+        <ul>
+          <li>配对成功 +100 分；可用“提示”和“洗牌”</li>
+          <li>记录每个棋盘大小的最佳用时（本地存储）</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>Made with 💡 by Codex</small>
+    </footer>
+
+    <script src="src/lib/data.js"></script>`n    <script src="src/lib/tone.js"></script>`n    <script src="src/game.js"></script>
+  </body>
+</html>
+
+
+

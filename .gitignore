@@ -1,0 +1,16 @@
+# Node/web ignores
+node_modules/
+dist/
+build/
+.tmp/
+.cache/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.env
+.env.*
+# Editor
+.vscode/
+.idea/
